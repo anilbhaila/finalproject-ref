@@ -1,34 +1,58 @@
 variable "credentials" {
-  description = "Path to Google Cloud service account credentials"
-  default     = "/terraform/keys/gcp-credentials.json"
-}
-
-variable "location" {
-  description = "Google Cloud project location"
-  default     = "us-south1"
+    description = "GCP Credentials"
+    # Replace with your credential path
+    default = "./keys/gcp-credentials.json"
 }
 
 variable "project" {
-  description = "Google Cloud project ID"
-  default     = "dtc-ab-de-2026"
+    description = "GCP Project ID"
+    # Replace with your project ID
+    default = "dtc-ab-de-2026"
 }
 
 variable "region" {
-  description = "Google Cloud region"
-  default     = "us-south1"
+    description = "GCP Region"
+    # Replace with your location
+    default = "us-south1"
 }
 
-variable "bq_dataset_name" {
-  description = "BigQuery dataset name"
-  default     = "etl_dataset"
+variable "location" {
+    description = "Data Location"
+    default = "us-south1"
+}
+
+variable "raw_dataset_name" {
+  description = "BigQuery Raw Dataset Name"
+  default     = "carpark_raw"
+}
+
+variable "processed_dataset_name" {
+  description = "BigQuery Processed Dataset Name"
+  default     = "carpark_processed"
 }
 
 variable "gcs_bucket_name" {
-  description = "Google Cloud Storage bucket name"
-  default     = "dtc_project_bucket"
+    description = "Data Lake Bucket Name"
+    # bucket name
+    default = "lta-carpark"
 }
 
 variable "gcs_storage_class" {
-  description = "Storage class for GCS bucket"
-  default     = "STANDARD"
+    description = "Bucket Storage Class"
+    default = "STANDARD"
+}
+
+variable "dataproc_cluster_name" {
+  description = "Dataproc Cluster Name"
+  default     = "carpark-flink-cluster"
+}
+
+variable "dataproc_machine_type" {
+  description = "Machine type for Dataproc cluster nodes"
+  default     = "n1-standard-2"
+}
+
+variable "dataproc_image_version" {
+  description = "Dataproc image version"
+  default     = "2.1-debian10"
 }

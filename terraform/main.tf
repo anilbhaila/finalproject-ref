@@ -1,9 +1,8 @@
-
 terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "5.35.0"
+      version = "6.19.0"
     }
   }
 }
@@ -14,51 +13,130 @@ provider "google" {
   region      = var.region
 }
 
-locals {
-  base_filename  = "world_population"
-  current_date   = formatdate("YYYY-MM-DD", timestamp()) 
-  full_filename  = "${local.base_filename}_${local.current_date}.csv"
-  file_location  = "/terraform/data/${local.full_filename}"
-}
-
-# Try to get an existing GCS bucket
-data "google_storage_bucket" "existing_bucket" {
-  name = var.gcs_bucket_name
-}
-
-# Create GCS Bucket if it doesn't exist
-resource "google_storage_bucket" "demo_bucket" {
-  count         = try(data.google_storage_bucket.existing_bucket.id, null) == null ? 1 : 0
+# GCS Data Lake Storage Bucket
+resource "google_storage_bucket" "carpark_bucket" {
   name          = var.gcs_bucket_name
   location      = var.location
   force_destroy = true
 
-  lifecycle_rule {
-    condition { age = 3 }
-    action { type = "Delete" }
-  }
+  uniform_bucket_level_access = true
 
   lifecycle_rule {
-    condition { age = 1 }
-    action { type = "AbortIncompleteMultipartUpload" }
+    condition {
+      age = 1  # Keep for 30 days
+    }
+    action {
+      type = "AbortIncompleteMultipartUpload"
+    }
   }
 }
 
-# Upload a File to GCS
-resource "google_storage_bucket_object" "uploaded_file" {
-  name   = local.full_filename
-  bucket = var.gcs_bucket_name
-  source = local.file_location
+# Create a directory for temporary files of Dataflow
+resource "google_storage_bucket_object" "dataflow_temp_folder" {
+  name    = "temp/"
+  content = "temp folder for dataflow"
+  bucket  = google_storage_bucket.carpark_bucket.name
 }
 
-# Try to get an existing BigQuery Dataset
-data "google_bigquery_dataset" "existing_dataset" {
-  dataset_id = var.bq_dataset_name
+# Create a directory for Dataflow staging files
+resource "google_storage_bucket_object" "dataflow_staging_folder" {
+  name    = "staging/"
+  content = "staging folder for dataflow"
+  bucket  = google_storage_bucket.carpark_bucket.name
 }
 
-# Create BigQuery Dataset if it doesn't exist
-resource "google_bigquery_dataset" "demo_dataset" {
-  count      = try(data.google_bigquery_dataset.existing_dataset.id, null) == null ? 1 : 0
-  dataset_id = var.bq_dataset_name
+# BigQuery Dataset - Raw Data
+resource "google_bigquery_dataset" "raw_dataset" {
+  dataset_id = var.raw_dataset_name
   location   = var.location
+}
+
+# BigQuery Dataset - Processed Data
+resource "google_bigquery_dataset" "processed_dataset" {
+  dataset_id = var.processed_dataset_name
+  location   = var.location
+}
+
+# BigQuery raw data table
+resource "google_bigquery_table" "carpark_availability_table" {
+  dataset_id = google_bigquery_dataset.raw_dataset.dataset_id
+  table_id   = "carpark_availability"
+  deletion_protection = false
+
+  time_partitioning {
+    type  = "DAY"
+    field = "timestamp"
+  }
+
+  schema = <<EOF
+[
+  {
+    "name": "timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "CarParkID",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "Area",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "Development",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "Location",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "Latitude",
+    "type": "FLOAT",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "Longitude",
+    "type": "FLOAT",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "AvailableLots",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "LotType",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "Agency",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "ingestion_time",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "processing_time",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED"
+  }
+]
+EOF
+}
+
+# Load Dataflow job script into GCS
+resource "google_storage_bucket_object" "dataflow_job_file" {
+  name   = "jobs/kafka_to_gcs_pipeline.py"
+  bucket = google_storage_bucket.carpark_bucket.name
+  source = "../processing/dataflow/kafka_to_gcs_pipeline.py"
 }
