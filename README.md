@@ -94,4 +94,26 @@ print(123)
 VS code will ask for kernel.
 we can use above url in VS code as Jupyter kernel. So that we can execute python code in notebook cell.
 
+job_id
+fetch_api_to_gcs executed successfully
+prepare_transform_script executed successfully
+
+
+Enable Dataflow API in GCP
+Job was lunched but getting error
+
+severity: "ERROR"
+textPayload: "Error occurred in the launcher container: Template launch failed. See console logs."
+
+Added Below roles to the svc_dtc-ab-de-2026@developer.gserviceaccount.com
+roles/Viewer
+
+And use this service account to run the Dataflow Jobs
+"environment": {
+                    "serviceAccountEmail": "svc-dtc-ab-de-2026@dtc-ab-de-2026.iam.gserviceaccount.com"
+                }
+Add this code below parameters:
+
+Finally Dataflow job ran successfully.
+
 

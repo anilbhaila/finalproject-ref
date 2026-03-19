@@ -165,23 +165,26 @@ def lta_carpark_pipeline():
         # Changed location to North America region
         gcs_to_bigquery = DataflowStartFlexTemplateOperator(
             task_id="gcs_to_bigquery_dataflow",
-            project_id="lta-caravailability",
-            location="northamerica-northeast2",  # Changed to North America region
+            project_id=Variable.get("project_id"),
+            location=Variable.get("location"),  # Changed to North America region
             wait_until_finished=False,  # Don't wait for completion to avoid Airflow resource issues
             body={
                 "launchParameter": {
-                    "containerSpecGcsPath": "gs://dataflow-templates-northamerica-northeast2/latest/flex/GCS_Text_to_BigQuery_Flex",  # Updated template path
+                    "containerSpecGcsPath": f"gs://dataflow-templates-{Variable.get('location')}/latest/flex/GCS_Text_to_BigQuery_Flex",  # Updated template path
                     "jobName": f"gcs-to-bq-job-{day_folder.replace('-', '')}",
                     "parameters": {
                         "javascriptTextTransformFunctionName": "transform",
                         "javascriptTextTransformGcsPath": script_paths["transform_path"],
                         "JSONPath": script_paths["schema_path"],
-                        "inputFilePattern": f"gs://lta-carpark/carpark-data/{day_folder}/*.json",  # Only process that day's data
-                        "outputTable": "lta-caravailability:carpark_raw.carpark_availability",
-                        "bigQueryLoadingTemporaryDirectory": "gs://lta-carpark/temp/",
-                        "tempLocation": "gs://lta-carpark/temp/",
+                        "inputFilePattern": f"gs://{Variable.get('bucket_name')}/carpark-data/{day_folder}/*.json",  # Only process that day's data
+                        "outputTable": f"{Variable.get('project_id')}:carpark_raw.carpark_availability",
+                        "bigQueryLoadingTemporaryDirectory": f"gs://{Variable.get('bucket_name')}/temp/",
+                        "tempLocation": f"gs://{Variable.get('bucket_name')}/temp/",
                         "numWorkers": "1",  # Use minimum workers
-                        "workerMachineType": "n1-standard-1"  # Use smaller machine type
+                        "workerMachineType": "e2-standard-2"  # Use smaller machine type
+                    },
+                    "environment": {
+                        "serviceAccountEmail": "svc-dtc-ab-de-2026@dtc-ab-de-2026.iam.gserviceaccount.com"
                     }
                 }
             }
@@ -198,14 +201,14 @@ def lta_carpark_pipeline():
         dedup_query = """
         -- Create a temporary table with distinct records
         CREATE OR REPLACE TEMP TABLE temp_deduped AS
-        SELECT DISTINCT * FROM `lta-caravailability.carpark_raw.carpark_availability`;
+        SELECT DISTINCT * FROM `dtc-ab-de-2026.carpark_raw.carpark_availability`;
 
         -- Delete all records from the partitioned table
-        DELETE FROM `lta-caravailability.carpark_raw.carpark_availability` 
+        DELETE FROM `dtc-ab-de-2026.carpark_raw.carpark_availability` 
         WHERE TRUE;
 
         -- Insert the deduplicated records back
-        INSERT INTO `lta-caravailability.carpark_raw.carpark_availability`
+        INSERT INTO `dtc-ab-de-2026.carpark_raw.carpark_availability`
         SELECT * FROM temp_deduped;
         """
         
@@ -213,7 +216,7 @@ def lta_carpark_pipeline():
             task_id="clean_duplicates_in_bigquery",
             sql=dedup_query,
             use_legacy_sql=False,
-            location="asia-southeast1",  # BigQuery location remains the same
+            location=Variable.get("location")  # BigQuery location remains the same
         )
         
         return clean_task.execute(context=kwargs)
