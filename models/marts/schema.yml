@@ -1,0 +1,94 @@
+
+version: 2
+
+models:
+  - name: dim_carparks
+    description: >
+      Dimension table containing the latest metadata information for all car parks.
+    columns:
+      - name: carpark_lot_key
+        description: Unique identifier for car park and lot type combination
+        tests:
+          - unique
+          - not_null
+      - name: CarParkID
+        description: Unique identifier for the car park
+      - name: Area
+        description: Geographical area where the car park is located
+      - name: Development
+        description: Building or development project associated with the car park
+      - name: Location
+        description: Coordinate string of the car park location
+      - name: Latitude
+        description: Latitude coordinate of the car park
+      - name: Longitude
+        description: Longitude coordinate of the car park
+      - name: LotType
+        description: Code representing the type of parking lot
+      - name: lot_type_description
+        description: Description of the parking lot type
+      - name: Agency
+        description: Organization responsible for managing the car park
+
+  - name: fact_carpark_availability
+    description: >
+      Fact table recording all car park availability data points.
+    columns:
+      - name: event_id
+        description: Unique identifier for each availability event
+        tests:
+          - unique
+          - not_null
+      - name: CarParkID
+        description: Unique identifier for the car park
+      - name: event_time
+        description: Timestamp when the data was collected
+      - name: event_date
+        description: Date when the data was collected
+      - name: hour_of_day
+        description: Hour of day when the data was collected
+      - name: day_of_week
+        description: Day of week when the data was collected
+      - name: AvailableLots
+        description: Number of available parking lots
+      - name: LotType
+        description: Type of parking lot
+      - name: lot_type_description
+        description: Description of the parking lot type
+      - name: time_category
+        description: Time category (Morning Peak/Evening Peak/Daytime/Night)
+      - name: ingestion_time
+        description: Timestamp when data was ingested into the system
+      - name: processing_time
+        description: Timestamp when data was processed
+
+  - name: rpt_carpark_utilization
+    description: >
+      Car park utilization report aggregated by date, hour and car park.
+    columns:
+      - name: event_date
+        description: Date of observation
+      - name: hour_of_day
+        description: Hour of observation
+      - name: Area
+        description: Geographical area of the car park
+      - name: Development
+        description: Building or development project
+      - name: CarParkID
+        description: Unique identifier for the car park
+      - name: avg_available_lots
+        description: Average number of available parking lots
+      - name: data_points
+        description: Number of data points in this aggregation
+      - name: LotType
+        description: Type of parking lot
+      - name: lot_type_description
+        description: Description of the parking lot type
+      - name: Agency
+        description: Managing organization
+      - name: Latitude
+        description: Latitude coordinate
+      - name: Longitude
+        description: Longitude coordinate
+      - name: time_category
+        description: Time category classification
