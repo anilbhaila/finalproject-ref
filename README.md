@@ -75,4 +75,23 @@ Add Kafka connection:
     Port: 9092
 
 
-How to test Connection
+We need to run python code in jupyter notebook
+So, i installed jupyter note book in uv
+
+> pwd
+/home/ani.bhai.yt2022/finalproject-ref
+> uv init --python=3.13
+> uv add --dev juypter
+> uv run jupyter notebook
+
+we get http://localhost:8888/tree?token=edb09184be5d913ec7337bd7f895cd10e3d8331783124806
+You can use jupter notebook in browser as well as in VS Code.
+
+Create notebook.ipynb
+test notebook cell by executing 
+print(123)
+
+VS code will ask for kernel.
+we can use above url in VS code as Jupyter kernel. So that we can execute python code in notebook cell.
+
+
