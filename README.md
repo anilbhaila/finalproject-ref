@@ -94,6 +94,11 @@ print(123)
 VS code will ask for kernel.
 we can use above url in VS code as Jupyter kernel. So that we can execute python code in notebook cell.
 
+Added Variables key pair in Airflow UI
+lta_api_key
+Project_id
+location
+
 job_id
 fetch_api_to_gcs executed successfully
 prepare_transform_script executed successfully
