@@ -48,7 +48,8 @@ i ran below code to find UID of my AIRFLOW USR and add it to .env file
 > echo -e "AIRFLOW_UID=$(id -u)" >> .env
 
 This also fixed the permission issue in ./logs
-
+The SSH Interruption was not due to permission issue, it was because of memory exhaustion.
+So, increased VMs memory to 8GM, this is minimum requirement for Airflow
 
 Got Error:
 airflow-webserver_1  | ERROR: You need to initialize the database. Please run `airflow db init`. Make sure the command is run using Airflow vers
@@ -72,3 +73,6 @@ Add Kafka connection:
     conn Type: Kafka
     Host: kafka
     Port: 9092
+
+
+How to test Connection
