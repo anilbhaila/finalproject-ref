@@ -123,12 +123,12 @@ resource "google_bigquery_table" "carpark_availability_table" {
   {
     "name": "ingestion_time",
     "type": "TIMESTAMP",
-    "mode": "REQUIRED"
+    "mode": "NULLABLE"
   },
   {
     "name": "processing_time",
     "type": "TIMESTAMP",
-    "mode": "REQUIRED"
+    "mode": "NULLABLE"
   }
 ]
 EOF

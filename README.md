@@ -114,6 +114,10 @@ And use this service account to run the Dataflow Jobs
                 }
 Add this code below parameters:
 
-Finally Dataflow job ran successfully.
+Finally Dataflow job permission issue was resolved.
 
+But still Job Failed, because terraform created dataset with schema. 
+And schema made, ingestion_time and processing_time as required.
 
+Let's remove those required field that is causing error or don't make it required, just make it nullable.
+Finally, job ran successfully
