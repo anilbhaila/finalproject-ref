@@ -41,6 +41,15 @@ Got error. due to permission issues.
 > sudo chown -R 50000:0 ./logs
 > sudo chmod -R 775 ./logs
 
+After using above code, the permission issues fixed but SSH connection was interrupted and i was not able to connect back. Thus, i deleted ./logs folder
+
+And recreated my self.
+i ran below code to find UID of my AIRFLOW USR and add it to .env file
+> echo -e "AIRFLOW_UID=$(id -u)" >> .env
+
+This also fixed the permission issue in ./logs
+
+
 Got Error:
 airflow-webserver_1  | ERROR: You need to initialize the database. Please run `airflow db init`. Make sure the command is run using Airflow vers
 
@@ -50,3 +59,16 @@ Great!!
 Now we can reach to airflow webserver at http://localhost:8085
 username:airflow
 password:airflow
+
+
+# Configure Airflow Connections
+Go to Admin > Connections
+    conn Id: google_cloud_default
+    Conn Type: Google Cloud
+    Upload service account key file
+
+Add Kafka connection:
+    conn Id: kafka_default
+    conn Type: Kafka
+    Host: kafka
+    Port: 9092
